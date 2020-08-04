@@ -1,7 +1,7 @@
 <template>
   <div class="tab-bar-item" @click="itemClick">
     <div :class="{active: isActive}">
-      <slot v-if="!isActive" name="item-icon"></slot>
+      <slot v-if="isActive" name="item-icon"></slot>
       <slot v-else name="item-icon-active"></slot>
     </div>
     <div :style="activeStyle">
@@ -17,15 +17,11 @@ export default {
     path: String,
     activeColor: {
       type: String,
-      default: "#ff9aad",
+      default: "#666666",
     },
   },
   computed: {
     isActive() {
-      // /home -> item1(/home) = true
-      // /home -> item1(/category) = false
-      // /home -> item1(/cart) = true
-      // /home -> item1(/profile) = true
       return this.$route.path.indexOf(this.path);
     },
     activeStyle() {
@@ -48,6 +44,7 @@ export default {
   flex: 1;
   text-align: center;
   font-size: 14px;
+  color: #ff9aad;
 }
 
 .tab-bar-item img {
