@@ -3,6 +3,13 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
+    <tab-control
+      class="tab-control"
+      :titles="['流行','新款','精选']"
+      @tabClick="tabClick"
+      ref="tabControl1"
+      v-show="isTabFixed"
+    />
     <scroll
       class="content"
       ref="scroll"
@@ -11,14 +18,14 @@
       :pull-up-load="true"
       @pullingUp="loadMore"
     >
-      <home-Swiper :banners="banners"></home-Swiper>
+      <home-Swiper :banners="banners" @swiperImgLoad="swiperImgLoad" />
       <home-recommend-view :recommends="recommends"></home-recommend-view>
       <home-feature-view />
       <tab-control
         class="tab-control"
         :titles="['流行','新款','精选']"
         @tabClick="tabClick"
-        ref="tabControl"
+        ref="tabControl2"
       />
       <goods-list :goods="showGoods"></goods-list>
     </scroll>
@@ -58,6 +65,8 @@ export default {
       currentType: "pop",
       isShowBackTop: false,
       tabOffsetTop: 0,
+      isTabFixed: false,
+      saveY: 0,
     };
   },
   components: {
@@ -83,19 +92,22 @@ export default {
     //监听每张图片加载完成并刷新BScroll高度
     //因为异步的原因，使图片未渲染出来，上拉加载图片时会卡，在每张图片加载完成后刷新BScroll高度
     //调用防抖动
-    const refresh = debounce(this.$refs.scroll.refresh, 100);
+    const refresh = debounce(this.$refs.scroll.refresh, 50);
     this.$bus.$on("itemImgLoad", () => {
       refresh();
     });
-
-    //获取tabControl的tabOffsetTop
-    //所有的组件都有一个属性$el:用于获取组件中的元素
-    console.log(this.$refs.tabControl.$el.offsetTop);
   },
   computed: {
     showGoods() {
       return this.goods[this.currentType].list;
     },
+  },
+  activated() {
+    this.$refs.scroll.scrollTo(0, this.saveY, 0);
+    this.$refs.scroll.refresh();
+  },
+  deactivated() {
+    this.saveY = this.$refs.scroll.getScrollY();
   },
   methods: {
     /*
@@ -114,6 +126,8 @@ export default {
           this.currentType = "sell";
           break;
       }
+      this.$refs.tabControl1.countIndex = index;
+      this.$refs.tabControl2.countIndex = index;
     },
     //点击返回顶部
     backClick() {
@@ -125,13 +139,21 @@ export default {
     },
     //判断页面滚动是否小于-1000
     contentScroll(position) {
-      // console.log(position.y)
+      //1.判断BackTop是否显示
       this.isShowBackTop = position.y < -1000;
+
+      //2.决定tabControl是否吸顶
+      this.isTabFixed = -position.y > this.tabOffsetTop;
     },
     //上拉加载更多
     loadMore() {
       //调用获取商品数据的方法
       this.getHomeGoods(this.currentType);
+    },
+    swiperImgLoad() {
+      //获取tabControl的tabOffsetTop
+      //所有的组件都有一个属性$el:用于获取组件中的元素
+      this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
     },
 
     /*
@@ -173,6 +195,7 @@ export default {
 }
 .tab-control {
   z-index: 9;
+  position: relative;
 }
 .content {
   position: absolute;

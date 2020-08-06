@@ -37,6 +37,9 @@ export default {
     refresh() {
       this.scroll && this.scroll.refresh();
     },
+    getScrollY() {
+      return this.scroll ? this.scroll.y : 0;
+    },
   },
   mounted() {
     //默认情况下BScroll是不可以实时监听滚动位置
