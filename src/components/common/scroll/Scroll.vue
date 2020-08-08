@@ -32,7 +32,7 @@ export default {
       this.scroll && this.scroll.scrollTo(x, y, time);
     },
     finishPullUp() {
-      this.scroll.finishPullUp();
+      this.scroll && this.scroll.finishPullUp()
     },
     refresh() {
       this.scroll && this.scroll.refresh();
@@ -56,9 +56,11 @@ export default {
     });
 
     //2.监听滚动区域的位置
-    this.scroll.on("scroll", (position) => {
-      this.$emit("scroll", position);
-    });
+    if (this.probeType === 2 || this.probeType === 3) {
+      this.scroll.on("scroll", (position) => {
+        this.$emit("scroll", position);
+      });
+    }
 
     //3.监听上拉事件
     if (this.pullUpLoad) {

@@ -67,6 +67,7 @@ export default {
       tabOffsetTop: 0,
       isTabFixed: false,
       saveY: 0,
+      itemImgListener: null,
     };
   },
   components: {
@@ -93,9 +94,12 @@ export default {
     //因为异步的原因，使图片未渲染出来，上拉加载图片时会卡，在每张图片加载完成后刷新BScroll高度
     //调用防抖动
     const refresh = debounce(this.$refs.scroll.refresh, 50);
-    this.$bus.$on("itemImgLoad", () => {
+
+    //对监听事件进行保存
+    this.itemImgListener = () => {
       refresh();
-    });
+    };
+    this.$bus.$on("itemImgLoad", this.itemImgListener);
   },
   computed: {
     showGoods() {
@@ -107,7 +111,10 @@ export default {
     this.$refs.scroll.refresh();
   },
   deactivated() {
+    //保存Y值
     this.saveY = this.$refs.scroll.getScrollY();
+    //取消全局事件的监听
+    this.$bus.$off("itemImgLoad", this.itemImgListener);
   },
   methods: {
     /*
